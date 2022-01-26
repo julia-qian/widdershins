@@ -103,14 +103,16 @@ Base URLs:
 #### Properties
 {{?}}
 
-{{? block.rows.length}}|Name|Type|Required|Restrictions|Description|
-|---|---|---|---|---|{{?}}
-{{~ block.rows :p}}|{{=p.displayName}}|{{=p.safeType}}|{{=p.required}}|{{=p.restrictions||'none'}}|{{=p.description||'none'}}|
+{{? block.rows.length}}|Name|Type|Description|
+|---|---|---|{{?}}
+{{~ block.rows :p}}|{{=p.displayName}} {{? p.required}} <span style="color:red">*</span> {{?}}|{{=p.safeType}}|{{=p.description||'none'}}|
 {{~}}
 {{~}}
 {{? (blocks[0].rows.length === 0) && (blocks.length === 1) }}
 *None*
 {{?}}
+
+<span style="color:red">*</span> Required
 
 {{? enums.length > 0 }}
 {{= data.tags.section }}
