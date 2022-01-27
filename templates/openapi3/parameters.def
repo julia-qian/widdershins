@@ -7,6 +7,111 @@
 {{~}}
 <span style="color:red">*</span> Required
 
+
+{{
+    class Node {
+        constructor(param) {
+            this.param = param;
+            this.parent = null;
+            this.children = [];
+        }
+    }
+
+    function count_indent(name) {
+        var count = 0;
+        for (let i = 0; i < name.length; ++i) {
+            if (name[i] == "»") {
+                ++count;
+            } else {
+                return count;
+            }
+        }
+    }
+
+    const body = new Node('body');
+
+    var cur_parent = null;
+    var prev_node = body;
+    var depth = 0;
+
+    var index = 0;
+    var has_body = false;
+
+    while (index < data.parameters.length){
+        ++index;
+        if (data.parameters[index-1].name == "body") {
+            has_body = true;
+            break;
+        }
+    }
+
+    if (has_body) {
+        for (let i = index; i < data.parameters.length; ++i) {
+            const new_node = new Node(data.parameters[i].name);
+            if (count_indent(data.parameters[i].name) > depth ) {
+                ++depth;
+                cur_parent = prev_node;
+            } else if (count_indent(data.parameters[i].name) < depth) {
+                --depth;
+                cur_parent = cur_parent.parent;
+            }
+            new_node.parent = cur_parent;
+            cur_parent.children.push(new_node);
+            prev_node = new_node;
+        }
+    }
+
+}}
+
+<table>
+    <thead>
+        <th>Name</th>
+        <th>In</th>
+        <th>Type</th>
+        <th>Description</th>
+    </thead>
+    <tbody>
+        {{var prev = "temp";}}
+        {{~ data.parameters :p}}
+        {{? p.name.charAt(0) != "»"}}
+            <tr>
+                <td>{{=p.name}} {{? p.required}} <span style="color:red">*</span> {{?}} </td>
+                <td>{{=p.in}}</td>
+                <td>{{=p.safeType}}</td>
+                <td>{{=p.shortDesc || 'none'}}</td>
+                <td>{{=prev}}</td>
+                {{prev = p.name;}}
+            </tr>
+            {{? p.name == "body"}}
+                <div id="{{=data.operationUniqueName}}-body">
+                    {{~ body.children: c}}
+                        <div>
+                            <div onclick="myFun('{{=data.operationUniqueName}}-{{=c.param}}-children')">{{=c.param}}</div>
+                           <div id='{{=data.operationUniqueName}}-{{=c.param}}-children'>
+                                {{~c.children :d}}
+                                    <div style="color:red">{{=d.param}}</div>
+                                {{~}}
+                            </div>
+                        </div>
+                    {{~}}
+                </div>
+
+                <script>
+                    function myFun(name) {
+                        var x = document.getElementById(name);
+                        if (x.style.display === "none") {
+                            x.style.display = "block";
+                        } else {
+                            x.style.display = "none";
+                        }
+                    }
+                </script>
+            {{?}}
+        {{?}}
+        {{~}}
+    </tbody>
+</table>
+
 {{? data.longDescs }}
 #### Detailed descriptions
 {{~ data.parameters :p}}{{? p.shortDesc !== p.description}}
